@@ -3,7 +3,7 @@ import pandas as pd
 
 
 def get_model_api():
-    model = tf.keras.models.load_model("/Users/marc/Documents/ML_TEST_SERVIER/servier_package/model", compile=False)
+    model = tf.keras.models.load_model("/app/model", compile=False)
 
     def model_api(input_data):
         model_type = input_data["model_type"]
