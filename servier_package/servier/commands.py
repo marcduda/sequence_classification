@@ -5,8 +5,8 @@ import pandas as pd
 from feature_extractor import fingerprint_features
 from tensorflow import keras
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score, roc_auc_score
 from imblearn.over_sampling import SMOTE
-from sklearn.metrics import confusion_matrix
 from tensorflow.keras.preprocessing import text, sequence
 from tensorflow.keras.preprocessing.text import Tokenizer
 import tensorflow as tf
@@ -54,24 +54,13 @@ def create_model(input_dim):
             mask_zero=True),
         tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(64)),
         tf.keras.layers.Dense(64, activation='relu'),
-        tf.keras.layers.Dense(1, activation='softmax') # softmax to get all the metrics below
+        tf.keras.layers.Dense(1, activation='sigmoid') # softmax to get all the metrics below
         ])
-
-    metrics = [
-        keras.metrics.TruePositives(name='tp'),
-        keras.metrics.FalsePositives(name='fp'),
-        keras.metrics.TrueNegatives(name='tn'),
-        keras.metrics.FalseNegatives(name='fn'), 
-        keras.metrics.BinaryAccuracy(name='accuracy'),
-        keras.metrics.Precision(name='precision'),
-        keras.metrics.Recall(name='recall'),
-        keras.metrics.AUC(name='auc')
-        ]
 
     model.compile(
         loss=tf.keras.losses.BinaryCrossentropy(),
-        optimizer=tf.keras.optimizers.Adam(1e-4),
-        metrics=metrics
+        optimizer=tf.keras.optimizers.Adam(1e-2),
+        metrics=keras.metrics.BinaryAccuracy(name='accuracy') #metrics
         )
     return model
 
@@ -134,20 +123,20 @@ def evaluate(x, model_path, model_type):
     model = tf.keras.models.load_model(model_path)
 
     results = model.evaluate(X, Y)
-    'tp' 'fp' 'tn' 'fn' 'accuracy' 'precision' 'recall' 'auc'
+
     print(f"\n\
             Loss (BinaryCrossentropy): {results[0]}\n \
-            Number of True Positive: {results[1]}\n\
-            Number of False Positive: {results[2]}\n\
-            Number of True Negative: {results[3]}\n\
-            Number of False Negative: {results[4]}\n\
-            Accuracy: {results[5]}\n\
-            Precision: {results[6]}\n\
-            Recall: {results[7]}\n\
-            AUC: {results[8]}\n"
+            Accuracy: {results[1]}\n"
     )
 
-    predictions = model.predict(X)
+    # Print other metrics through predictions
+    predictions = model.predict(X).astype(np.int32)
+    Y = Y.astype(np.int32) 
+    print(f"F1 Score: {f1_score(Y, predictions)}\n\
+            Precision Score: {precision_score(Y, predictions)}\n\
+            Recall Score: {recall_score(Y, predictions)}\n\
+            AUC: {roc_auc_score(Y, predictions)}\n"
+    )
     print("confusion matrix")
     print(confusion_matrix(Y, predictions))
 
