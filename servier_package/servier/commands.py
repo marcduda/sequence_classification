@@ -25,9 +25,7 @@ def preprocess_data(data, model_type):
     if model_type =='Model_1':
         data['smiles'] = data['smiles'].apply(lambda x: fingerprint_features(x).flatten())
         data['smiles'] = data['smiles'].apply(lambda x:  np.asarray(x).astype('float32'))
-        data['smiles'] = data['smiles'].apply(lambda x:  np.asarray(x).astype('float32'))
         
-        #over_sampler = SMOTE(random_state=0)
         Y = data['P1'].to_numpy().astype(np.int32) 
         X = np.stack(data['smiles'].to_numpy())
         input_dim = np.amax(X)+1
