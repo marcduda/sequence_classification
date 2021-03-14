@@ -120,4 +120,58 @@ def train(x, output, model_type):
     # could save the whole model or just the weights, depending on the usage
     model.save(output)
 
+@click.command(options_metavar='<options>')
+@click.argument("X", type=click.File('rb'))
+@click.argument("model_path", type=click.STRING)
+@click.option("--model_type", default=True, type=click.STRING)
+def evaluate(x, model_path, model_type):
+    """Evaluate the given network on the train and validation sets
+    
+    Arguments:\n
+        [X] must be a file path to a CSV which holds your training data\n
+    """
+    data = pd.read_csv(x)
+    X, Y, input_dim = preprocess_data(data, model_type)
+
+    model = tf.keras.models.load_model(model_path)
+
+    results = model.evaluate(X, Y)
+    'tp' 'fp' 'tn' 'fn' 'accuracy' 'precision' 'recall' 'auc'
+    print(f"\n\
+            Loss (BinaryCrossentropy): {results[0]}\n \
+            Number of True Positive: {results[1]}\n\
+            Number of False Positive: {results[2]}\n\
+            Number of True Negative: {results[3]}\n\
+            Number of False Negative: {results[4]}\n\
+            Accuracy: {results[5]}\n\
+            Precision: {results[6]}\n\
+            Recall: {results[7]}\n\
+            AUC: {results[8]}\n"
+    )
+
+    predictions = model.predict(X)
+    print("confusion matrix")
+    print(confusion_matrix(Y, predictions))
+
+@click.command(options_metavar='<options>')
+@click.option("--model_type", default=True, type=click.STRING)
+@click.argument("X", type=click.File('rb'))
+@click.argument("model_path", type=click.STRING)
+def predict(x, model_path, model_type):
+    """
+    predict an output with a given row. Prints the index of the prediction of the output row.
+    
+    Arguments:\n
+        [x] the file that holds the 1 * n row example that should be predicted  \n
+    """
+
+    data = pd.read_csv(x)
+    X, _, input_dim = preprocess_data(data, model_type)
+    dataset = tf.data.Dataset.from_tensor_slices(X)
+    model = tf.keras.models.load_model(model_path, compile=False)
+
+    print(model.predict(X))
+
 main.add_command(train)
+main.add_command(evaluate)
+main.add_command(predict)
