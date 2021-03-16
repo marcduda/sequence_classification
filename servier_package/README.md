@@ -16,9 +16,9 @@ python servier train path/to/data path/to/model/save/dir --model_type Model_1
 
 ## Train
 Expected arguments:
-- a csv file containing the training data (in csv format and containing at least the columns P1 and smiles)
-- a path to where the trained model will be saved
-- an option (`Model_1` or `Model_2`) specifying which type of preprocessing to do and thus which model to train (the architecture will be the same but the input size varies slightly to the model has to adapt).
+- A csv file containing the training data (in csv format and containing at least the columns P1 and smiles).
+- A path to where the trained model will be saved.
+- An option (`Model_1` or `Model_2`) specifying which type of preprocessing to do and thus which model to train (the architecture will be the same but the input size varies slightly so the model has to adapt).
   - `Model_1`: the data is preprocessed using the rdkit package encoding the string of characters into a vector.
   - `Model_2`: we use the text encoding capabilities of Tensorflow to encode each character of the input data also resulting in a vector.
 
@@ -26,29 +26,29 @@ Expected arguments:
   The data is preprocessed and then split between a train and a validation subset then we use a upsampling algorithm (here SMOTE) to upsample the minority class because the training data has much more examples of the class 1 than the class 0. A neural network having an LSTM layer is then trained on this data. We capture the loss and accuracy at each epoch on the training and validation data.
 
   Improvements on train command:
-  - Test different methods for the imbalance class problem like other imputation methods, or using weights for example so the model pays more attention to the minority class.
-  - add arguments to make the training more flexible.
-  - add a subset in the split (train/validation and test) to be sure that we don't overtune our model to improve the performances on the validation set.
-  - add a hyperparameter search.
-  - add an early stop to prevent the model from overfitting.
-  -  plot curves to better understand what's going on.
+  - Test different methods for the imbalance class problem like other imputation methods, or use weights so the model pays more attention to the minority class.
+  - Add arguments to make the training more flexible.
+  - Add a subset in the split (train/validation and test) to be sure that we don't overtune our model to improve the performances on the validation set.
+  - Add a hyperparameter search.
+  - Add an early stop to prevent the model from overfitting.
+  - Plot curves for the loss and accuracy during the training to better understand what's going on.
 
 ## Evaluate
 Expected arguments:
-- a csv file containing the data to evaluate the model (in csv format and containing at least the columns P1 and smiles)
-- a path to a trained model
-- an option (`Model_1` or `Model_2`) specifying which type of preprocessing to do. It has to be the same that was used in the trained model.
+- A csv file containing the data to evaluate the model (in csv format and containing at least the columns P1 and smiles).
+- A path to a trained model.
+- An option (`Model_1` or `Model_2`) specifying which type of preprocessing to do. It has to be the same that was used in the trained model.
 
-The data is processed and then evaluated and a bunch of metrics are plotted.
+The data is processed and then evaluated and a bunch of metrics are printed.
 
 Improvements:
-- compute other metrics (true positive, true negative, false positive and false negative).
+- Compute other metrics (true positive, true negative, false positive and false negative or f1) to have a clearer picture of the performances of the model.
 
 ## Predict
 Expected arguments:
-- a csv file containing the data to evaluate the model (in csv format and containing at least the column smiles)
-- a path to a trained model
-- an option (`Model_1` or `Model_2`) specifying which type of preprocessing to do. It has to be the same that was used in the trained model.
+- A csv file containing the data to evaluate the model (in csv format and containing at least the column smiles)
+- A path to a trained model
+- An option (`Model_1` or `Model_2`) specifying which type of preprocessing to do. It has to be the same that was used in the trained model.
 
 The data is processed either with the `Model_1` or the `Model_2` method and then we predict the output on the processed data.
 
@@ -57,7 +57,7 @@ To locally serve the model, change the path of the trained model in `serve.py` a
 ```
 python app.py
 ```
-then the interface should be available at `http://0.0.0.0:5000/`
+Then the interface should be available at `http://0.0.0.0:5000/`
 
 # Dockerfile
 We first need to build an image of our package (the dockerfile needs to be in the current directory):
@@ -71,10 +71,10 @@ docker run -v /path/to/data:/app -p 5000:5000
 
 # `Model_3` improvement :
 For a problem where there are more than one predicting outputs (P1 to P9 for example), we have to modify the model to take that into account, some selected possibilities:
-- do `n` models (same as before) each predicting an output `Pi`, the training is very long though and we have to basically optimize N models.
-- see it as a multi-label problem (i.e an observation can have a positive value of 1 for several outputs at the same time) and train a single model. A change to the last layer may be enough to accommodate to the new problem.
-- see the problem as a sequence to sequence problem meaning that from a string of characters we want to predict the sequence of `P1`to `Pn`, the advantage is also that we train a single model but the architecture needs more changes.
+- Do N models (same as before) each predicting an output `Pi`, the training is very long though and we have to basically optimize N models.
+- See it as a multi-label problem (i.e an observation can have a positive value of 1 for several outputs at the same time) and train a single model. A change to the last layer may be enough to accommodate to the new problem.
+- See the problem as a sequence to sequence problem meaning that from a string of characters we want to predict the sequence of `P1`to `Pn`, the advantage is also that we train a single model but the architecture needs more adjustments.
 
 General Improvement:
-- add error treatment (when data is not as expected for example).
-- replace prints with a proper logger.
+- Add error treatment (when data is not as expected for example).
+- Replace prints with a proper logger.

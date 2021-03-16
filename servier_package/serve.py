@@ -1,5 +1,6 @@
 import tensorflow as tf
 import pandas as pd
+from servier.commands import preprocess_data
 
 
 def get_model_api():
@@ -11,7 +12,6 @@ def get_model_api():
         data = pd.read_json(data)
         X, _, input_dim = preprocess_data(data, model_type)
         dataset = tf.data.Dataset.from_tensor_slices(X)
-        model = tf.keras.models.load_model(model_path, compile=False)
-        return model.predict(X)
+        return model.predict(dataset)
 
     return model_api
